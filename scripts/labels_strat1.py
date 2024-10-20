@@ -5,6 +5,7 @@ import scipy.stats as ss
 import seaborn as sns
 import matplotlib.pyplot as plt
 import ta
+import os
 
 from loguru import logger
 from sklearn.metrics import mutual_info_score
@@ -183,6 +184,9 @@ for currency in prices_hourly.columns:
     close = close.loc[index]
     times = times.loc[index]
     
+    print("Current working directory:", os.getcwd())
+    print("Output folder path:", OUTPUT_FOLDER)
+
     features.to_csv(f"{OUTPUT_FOLDER}/{currency}_features.csv")
     target.to_csv(f"{OUTPUT_FOLDER}/{currency}_target.csv")
     close.to_csv(f"{OUTPUT_FOLDER}/{currency}_close.csv")

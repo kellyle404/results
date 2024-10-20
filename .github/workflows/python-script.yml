@@ -23,7 +23,12 @@ jobs:
         pip install -r requirements.txt
 
     - name: Create output directory
-      run: mkdir output || echo "Output directory already exists."
+      run: mkdir -p output
+
+    - name: Print current directory
+      run: |
+        echo "Current directory: $(pwd)"
+        ls -la
 
     - name: Run Python script
       run: |
