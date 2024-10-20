@@ -15,7 +15,7 @@ from statsmodels.tsa.stattools import adfuller
 logger.add("debug.log", level="INFO", rotation="1 MB", backtrace=True, diagnose=True)
 
 DATA_PATH = 'forex_test_data/*.csv'
-OUTPUT_FOLDER = os.path.abspath('../output')
+OUTPUT_FOLDER = os.path.join(os.path.dirname(__file__), '../output')
 
 files = glob.glob(DATA_PATH)
 
@@ -31,7 +31,7 @@ for file in files[1:]:
 prices['Date'] = pd.to_datetime(prices['Date'])
 prices.set_index('Date', inplace=True)
 
-prices_hourly = prices.resample('1H').last().ffill()
+prices_hourly = prices.resample('1h').last().ffill()
 
 def calculate_weights_ffd(degree: float, threshold: float) -> np.ndarray:
     weights = [1.]
@@ -77,13 +77,13 @@ def calculate_variation_of_information(x: np.ndarray, y: np.ndarray, bins: int, 
 
 def calculate_number_of_bins(num_observations: int, correlation: float = None, max_bins: int = 1000) -> int:
     try:
-        if correlation is None:
-            z = (8 + 324 * num_observations + 12 * (36 * num_observations + 729 * num_observations ** 2) ** .5) ** (1 / 3.)
-            bins = round(z / 6. + 2. / (3 * z) + 1. / 3)
-        else:
-            bins = round(2 ** -.5 * (1 + (1 + 24 * num_observations / (1. - correlation ** 2)) ** .5) ** .5)
-            bins = min(bins, max_bins)
-        return int(bins)
+        if correlation is None or num_observations <= 1:
+            return max_bins
+        if correlation == 1:
+            return 1
+        z = (8 + 324 * num_observations + 12 * (36 * num_observations + 729 * num_observations ** 2) ** .5) ** (1 / 3.)
+        bins = round(z / 6. + 2. / (3 * z) + 1. / 3)
+        return int(min(bins, max_bins))
     except OverflowError:
         return max_bins
 
