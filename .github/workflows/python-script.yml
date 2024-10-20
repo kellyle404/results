@@ -1,4 +1,4 @@
-name: Python Script Execution 
+name: Python Script Execution
 
 on:
   push:
@@ -22,10 +22,6 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Print working directory
-      run: |
-        pwd
-
     - name: Run Python script
       run: |
-        python scripts/label_strategy.py
+        python scripts/labels_strat1.py
