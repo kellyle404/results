@@ -1,33 +1,39 @@
-name: Python Script Execution
+name: Create labels
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  run_script:
+  process_data:
     runs-on: windows-latest
-
+    
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
+    - uses: actions/checkout@v3
+    
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.11.0'
-
+        python-version: '3.11'
+        cache: 'pip'
+    
     - name: Install dependencies
       run: |
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Create output directory if not exists
+    
+    - name: Prepare directories
       run: |
-        if (-not (Test-Path -Path "output")) {
-          New-Item -ItemType Directory -Path "output"
-        }
-
-    - name: Run Python script
-      run: |
-        python scripts/labels_strat1.py
+        mkdir -p output/labels_strat1
+      shell: bash
+    
+    - name: Run data processing
+      run: python scripts/labels_strat1.py
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: processed-data
+        path: output/labels_strat1/
+        retention-days: 7

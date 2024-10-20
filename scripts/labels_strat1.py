@@ -5,33 +5,24 @@ import scipy.stats as ss
 import seaborn as sns
 import matplotlib.pyplot as plt
 import ta
-import os
-
+from pathlib import Path
 from loguru import logger
 from sklearn.metrics import mutual_info_score
 from sklearn.preprocessing import StandardScaler
 from statsmodels.tsa.stattools import adfuller
 
-logger.add("debug.log", level="INFO", rotation="1 MB", backtrace=True, diagnose=True)
+ROOT_DIR = Path(__file__).parent.parent
+DATA_DIR = ROOT_DIR / 'forex_test_data'
+OUTPUT_DIR = ROOT_DIR / 'output' / 'labels_strat1'
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-DATA_PATH = 'forex_test_data/*.csv'
-OUTPUT_FOLDER = os.path.join(os.path.dirname(__file__), '../output')
-
-files = glob.glob(DATA_PATH)
-
-if not files:
-    logger.error("No CSV files found in the specified directory.")
-
-prices = pd.read_csv(files[0], header=0)
-
-for file in files[1:]:
-    df = pd.read_csv(file, header=0)
-    prices = pd.merge(prices, df, on='Date', how='inner')
-
-prices['Date'] = pd.to_datetime(prices['Date'])
-prices.set_index('Date', inplace=True)
-
-prices_hourly = prices.resample('1h').last().ffill()
+logger.add(
+    OUTPUT_DIR / "processing.log",
+    level="INFO",
+    rotation="1 MB",
+    backtrace=True,
+    diagnose=True
+)
 
 def calculate_weights_ffd(degree: float, threshold: float) -> np.ndarray:
     weights = [1.]
@@ -115,8 +106,7 @@ def exit_time(close: pd.Series, number_hours: int) -> pd.DataFrame:
     timestamp_array = pd.Series(close.index[timestamp_array], index=close.index[:timestamp_array.shape[0]])
     return timestamp_array
 
-for currency in prices_hourly.columns:
-    close = prices_hourly[currency]
+def calculate_technical_features(close: pd.Series) -> pd.DataFrame:
     features = pd.DataFrame(index=close.index)
     features['frac_diff_log'] = fracdiff_log_price(close)
     features['volat'] = get_volat_w_log_returns(close, span=10)
@@ -153,10 +143,9 @@ for currency in prices_hourly.columns:
     weights = np.arange(1, 25)
     features['wcl_price'] = close.rolling(window=24).apply(lambda x: np.dot(x, weights) / weights.sum(), raw=True)
 
-    features.dropna(inplace=True)
-    scaler = StandardScaler()
-    scaled_features = pd.DataFrame(scaler.fit_transform(features), index=features.index)
+    return features
 
+def select_features(scaled_features: pd.DataFrame) -> pd.DataFrame:
     selected_features = set(scaled_features.columns)
     for i, col_i in enumerate(scaled_features.columns):
         for col_j in scaled_features.columns[i + 1:]:
@@ -166,28 +155,78 @@ for currency in prices_hourly.columns:
             mi = calculate_mutual_information(x, y, norm=True)
             if vi < 0.2 or mi > 0.8:
                 selected_features.discard(col_j)
+    return scaled_features[list(selected_features)]
 
-    final_features = scaled_features[list(selected_features)]
-
+def process_currency(prices_hourly: pd.DataFrame, currency: str):
+    logger.info(f"Processing currency: {currency}")
+    
+    close = prices_hourly[currency]
+    features = calculate_technical_features(close)
+    features.dropna(inplace=True)
+    
+    scaler = StandardScaler()
+    scaled_features = pd.DataFrame(
+        scaler.fit_transform(features),
+        index=features.index,
+        columns=features.columns
+    )
+    
+    final_features = select_features(scaled_features)
     target = np.sign((close.pct_change()).shift(-1))
     target.fillna(0, inplace=True)
-
+    
     times = pd.DataFrame(exit_time(close, 24))
     times['end_time'] = times.values
     times['start_time'] = pd.to_datetime(times.index)
     times = times[['end_time', 'start_time']]
-
-    index = final_features.dropna().index.intersection(target.dropna().index).intersection(times.dropna().index)
+    
+    index = final_features.dropna().index.intersection(
+        target.dropna().index
+    ).intersection(times.dropna().index)
+    
     features = final_features.loc[index]
     target = target.loc[index]
     target.name = 'target'
     close = close.loc[index]
     times = times.loc[index]
     
-    print("Current working directory:", os.getcwd())
-    print("Output folder path:", OUTPUT_FOLDER)
+    save_results(currency, features, target, close, times)
 
-    features.to_csv(f"{OUTPUT_FOLDER}/{currency}_features.csv")
-    target.to_csv(f"{OUTPUT_FOLDER}/{currency}_target.csv")
-    close.to_csv(f"{OUTPUT_FOLDER}/{currency}_close.csv")
-    times.to_csv(f"{OUTPUT_FOLDER}/{currency}_times.csv")
+def save_results(currency: str, features: pd.DataFrame, target: pd.Series, 
+                close: pd.Series, times: pd.DataFrame):
+    logger.info(f"Saving results for {currency}")
+    
+    features.to_csv(OUTPUT_DIR / f"{currency}_features.csv")
+    target.to_csv(OUTPUT_DIR / f"{currency}_target.csv")
+    close.to_csv(OUTPUT_DIR / f"{currency}_close.csv")
+    times.to_csv(OUTPUT_DIR / f"{currency}_times.csv")
+
+def load_price_data() -> pd.DataFrame:
+    files = list(DATA_DIR.glob('*.csv'))
+    if not files:
+        logger.error("No CSV files found in the data directory")
+        raise FileNotFoundError("No CSV files found")
+        
+    prices = pd.read_csv(files[0], header=0)
+    
+    for file in files[1:]:
+        df = pd.read_csv(file, header=0)
+        prices = pd.merge(prices, df, on='Date', how='inner')
+    
+    prices['Date'] = pd.to_datetime(prices['Date'])
+    prices.set_index('Date', inplace=True)
+    return prices.resample('1h').last().ffill()
+
+def main():
+    logger.info("Starting data processing pipeline")
+    try:
+        prices_hourly = load_price_data()
+        for currency in prices_hourly.columns:
+            process_currency(prices_hourly, currency)
+        logger.info("Processing completed successfully")
+    except Exception as e:
+        logger.error(f"Processing failed: {str(e)}")
+        raise
+
+if __name__ == "__main__":
+    main()
