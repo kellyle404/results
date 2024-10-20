@@ -1,3 +1,10 @@
+name: Python Script Execution
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   run_script:
     runs-on: windows-latest
@@ -19,9 +26,6 @@ jobs:
       run: |
         if (-not (Test-Path -Path "output")) {
           New-Item -ItemType Directory -Path "output"
-          Write-Host "Output directory created."
-        } else {
-          Write-Host "Output directory already exists."
         }
 
     - name: Run Python script
