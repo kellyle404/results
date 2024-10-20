@@ -15,7 +15,7 @@ from statsmodels.tsa.stattools import adfuller
 logger.add("debug.log", level="INFO", rotation="1 MB", backtrace=True, diagnose=True)
 
 DATA_PATH = 'forex_test_data/*.csv'
-OUTPUT_FOLDER = '../output/'
+OUTPUT_FOLDER = os.path.abspath('../output')
 
 files = glob.glob(DATA_PATH)
 
