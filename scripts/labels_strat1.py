@@ -13,32 +13,24 @@ from statsmodels.tsa.stattools import adfuller
 
 logger.add("debug.log", level="INFO", rotation="1 MB", backtrace=True, diagnose=True)
 
-DATA_PATH = '../forex_test_data/'
+DATA_PATH = 'forex_test_data/*.csv'
 OUTPUT_FOLDER = 'output/'
 
-files = glob.glob(DATA_PATH + "*.csv")
-dataframes = []
+files = glob.glob(DATA_PATH)
 
-for file in files:
-    try:
-        logger.info(f"Attempting to read {file}")
-        df = pd.read_csv(file, header=0, parse_dates=['Date'], dayfirst=True)
-        if 'Date' in df.columns:
-            df.set_index('Date', inplace=True)
-            dataframes.append(df)
-            logger.info(f"Successfully read {file}")
-        else:
-            logger.warning(f"'Date' column missing in {file}")
-    except Exception as e:
-        logger.error(f"Error reading {file}: {e}")
+if not files:
+    logger.error("No CSV files found in the specified directory.")
 
-if not dataframes:
-    logger.error("No DataFrames to concatenate. Please check the CSV files.")
-else:
-    prices = pd.concat(dataframes, axis=1)
-    prices = prices.loc[:, ~prices.columns.duplicated()]
-    prices_hourly = prices.resample('1H').last().ffill()
+prices = pd.read_csv(files[0], header=0)
 
+for file in files[1:]:
+    df = pd.read_csv(file, header=0)
+    prices = pd.merge(prices, df, on='Date', how='inner')
+
+prices['Date'] = pd.to_datetime(prices['Date'])
+prices.set_index('Date', inplace=True)
+
+prices_hourly = prices.resample('1H').last().ffill()
 
 def calculate_weights_ffd(degree: float, threshold: float) -> np.ndarray:
     weights = [1.]
