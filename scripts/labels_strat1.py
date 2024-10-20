@@ -21,19 +21,24 @@ dataframes = []
 
 for file in files:
     try:
-        df = pd.read_csv(file, header=0)
+        logger.info(f"Attempting to read {file}")
+        df = pd.read_csv(file, header=0, parse_dates=['Date'], dayfirst=True)
         if 'Date' in df.columns:
-            df['Date'] = pd.to_datetime(df['Date'])
             df.set_index('Date', inplace=True)
             dataframes.append(df)
+            logger.info(f"Successfully read {file}")
         else:
             logger.warning(f"'Date' column missing in {file}")
     except Exception as e:
         logger.error(f"Error reading {file}: {e}")
 
-prices = pd.concat(dataframes, axis=1)
-prices = prices.loc[:, ~prices.columns.duplicated()]
-prices_hourly = prices.resample('1H').last().ffill()
+if not dataframes:
+    logger.error("No DataFrames to concatenate. Please check the CSV files.")
+else:
+    prices = pd.concat(dataframes, axis=1)
+    prices = prices.loc[:, ~prices.columns.duplicated()]
+    prices_hourly = prices.resample('1H').last().ffill()
+
 
 def calculate_weights_ffd(degree: float, threshold: float) -> np.ndarray:
     weights = [1.]
