@@ -22,6 +22,9 @@ jobs:
       run: |
         pip install -r requirements.txt
 
+    - name: Create output directory
+      run: mkdir output || echo "Output directory already exists."
+
     - name: Run Python script
       run: |
         python scripts/labels_strat1.py
