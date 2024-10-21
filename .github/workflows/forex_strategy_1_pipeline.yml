@@ -10,58 +10,41 @@ on:
 jobs:
   prepare:
     runs-on: windows-latest
-    permissions:
-      contents: write
     outputs:
       cache_key: ${{ steps.cache_key.outputs.key }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - id: cache_key
         run: echo "key=${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Set up Python and install dependencies
-        uses: ./.github/actions/setup-python
+        uses: actions/setup-python@v4
 
-      - name: Set up Python path
-        run: |
-          echo "${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "PYTHONPATH=${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Upload cache key as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: cache-key
+          path: $GITHUB_OUTPUT
 
   generate_labels:
     runs-on: windows-latest
     needs: prepare
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python and install dependencies
-        uses: ./.github/actions/setup-python
+      - name: Download cache key artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: cache-key
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
       - name: Run labels generation
-        run: |
-          python scripts/01_labels_strat1.py
+        run: python scripts/01_labels_strat1.py
         shell: pwsh
-
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git add output/
-          git diff --staged --quiet || echo "changed=true" >> $env:GITHUB_ENV
-        shell: pwsh
-
-      - name: Commit and push output files
-        if: env.changed == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update labels output [skip ci]"
-          git push
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload labels as artifact
         uses: actions/upload-artifact@v3
@@ -72,35 +55,20 @@ jobs:
   train_models:
     runs-on: windows-latest
     needs: generate_labels
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python and install dependencies
-        uses: ./.github/actions/setup-python
+      - name: Download labels artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: labels-output
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
       - name: Train all models
         run: python scripts/02_allmodels_strat1.py
         shell: pwsh
-
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git add output/
-          git diff --staged --quiet || echo "changed=true" >> $env:GITHUB_ENV
-        shell: pwsh
-
-      - name: Commit and push output files
-        if: env.changed == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update model training output [skip ci]"
-          git push
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload models as artifact
         uses: actions/upload-artifact@v3
@@ -111,35 +79,20 @@ jobs:
   select_best_models:
     runs-on: windows-latest
     needs: train_models
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python and install dependencies
-        uses: ./.github/actions/setup-python
+      - name: Download models artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: models-output
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
       - name: Select best models
         run: python scripts/03_bestmodels_strat1.py
         shell: pwsh
-
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git add output/
-          git diff --staged --quiet || echo "changed=true" >> $env:GITHUB_ENV
-        shell: pwsh
-
-      - name: Commit and push output files
-        if: env.changed == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update best models output [skip ci]"
-          git push
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload best models as artifact
         uses: actions/upload-artifact@v3
@@ -150,74 +103,44 @@ jobs:
   run_predictions:
     runs-on: windows-latest
     needs: select_best_models
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python and install dependencies
-        uses: ./.github/actions/setup-python
+      - name: Download best models artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: best-models-output
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
       - name: Run predictions
         run: python scripts/04_predictions_strat1.py
         shell: pwsh
-
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git add output/
-          git diff --staged --quiet || echo "changed=true" >> $env:GITHUB_ENV
-        shell: pwsh
-
-      - name: Commit and push output files
-        if: env.changed == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update predictions output [skip ci]"
-          git push
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload predictions as artifact
         uses: actions/upload-artifact@v3
         with:
           name: predictions-output
           path: output/
-
+          
   run_metrics:
     runs-on: windows-latest
     needs: run_predictions
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python and install dependencies
-        uses: ./.github/actions/setup-python
+      - name: Download predictions artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: predictions-output
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
       - name: Run metrics
         run: python scripts/05_metrics_strat1.py
         shell: pwsh
-
-      - name: Check for changes
-        id: check_changes
-        run: |
-          git add output/
-          git diff --staged --quiet || echo "changed=true" >> $env:GITHUB_ENV
-        shell: pwsh
-
-      - name: Commit and push output files
-        if: env.changed == 'true'
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update metrics output [skip ci]"
-          git push
-        shell: pwsh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload metrics as artifact
         uses: actions/upload-artifact@v3
