@@ -8,6 +8,7 @@ from pathlib import Path
 from loguru import logger
 import matplotlib.pyplot as plt
 import seaborn as sns
+import config
 from config import (
     DATA_DIR,
     ALL_MODELS_OUTPUT_DIR,

@@ -6,6 +6,7 @@ import pandas as pd
 import h2o
 from h2o.automl import H2OAutoML
 from sklearn.model_selection import train_test_split
+import config
 from config import (
     LABELS_OUTPUT_DIR, 
     ALL_MODELS_OUTPUT_DIR, 

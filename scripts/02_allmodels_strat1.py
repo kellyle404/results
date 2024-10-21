@@ -4,6 +4,7 @@ from pathlib import Path
 from loguru import logger
 from sklearn.model_selection import train_test_split
 from h2o.automl import H2OAutoML
+import config
 from config import (
     LABELS_OUTPUT_DIR,
     ALL_MODELS_OUTPUT_DIR,

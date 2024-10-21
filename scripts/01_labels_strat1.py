@@ -8,6 +8,7 @@ from loguru import logger
 from sklearn.metrics import mutual_info_score
 from sklearn.preprocessing import StandardScaler
 from statsmodels.tsa.stattools import adfuller
+import config
 from config import (
     DATA_DIR,
     LABELS_OUTPUT_DIR,
