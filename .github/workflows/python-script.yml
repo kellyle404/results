@@ -8,48 +8,46 @@ on:
 jobs:
   create_labels:
     runs-on: windows-latest
-    
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Prepare directories
-      run: |
-        mkdir output\labels_strat1
-    
-    - name: Generate trading labels
-      run: python scripts/labels_strat1.py
-    
-    - name: Upload labels
-      uses: actions/upload-artifact@v4
-      with:
-        name: trading-labels
-        path: output/labels_strat1/
-        retention-days: 7
-    
-    - name: List generated files
-      run: |
-        echo "Generated files in output/labels_strat1:"
-        ls output/labels_strat1
-      shell: bash
+      - name: Checkout code
+        uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
 
-    - name: Commit and push output files
-    run: |
-      git config --global user.name "GitHub Action"
-      git config --global user.email "kalulu404@gmail.com"
-      git add output/labels_strat1/*
-      git commit -m "Add generated labels"
-      git push
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Prepare directories
+        run: mkdir -p output/labels_strat1
+
+      - name: Generate trading labels
+        run: python scripts/labels_strat1.py
+
+      - name: Upload labels
+        uses: actions/upload-artifact@v4
+        with:
+          name: trading-labels
+          path: output/labels_strat1/
+          retention-days: 7
+
+      - name: List generated files
+        shell: bash
+        run: |
+          echo "Generated files in output/labels_strat1:"
+          ls output/labels_strat1
+
+      - name: Commit and push output files
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "kalulu404@gmail.com"
+          git add output/labels_strat1/*
+          git commit -m "Add generated labels"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
