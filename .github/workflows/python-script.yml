@@ -42,3 +42,14 @@ jobs:
         echo "Generated files in output/labels_strat1:"
         ls output/labels_strat1
       shell: bash
+
+
+    - name: Commit and push output files
+    run: |
+      git config --global user.name "GitHub Action"
+      git config --global user.email "kalulu404@gmail.com"
+      git add output/labels_strat1/*
+      git commit -m "Add generated labels"
+      git push
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
