@@ -1,5 +1,5 @@
 # .github/workflows/forex_strategy_pipeline.yml
-name: Forex Strategy Pipeline
+name: Forex Strategy 1 Pipeline
 
 on:
   push:
@@ -23,7 +23,6 @@ concurrency:
 jobs:
   forex_analysis:
     runs-on: window-latest
-    timeout-minutes: 1440  
 
     steps:
     - uses: actions/checkout@v3
