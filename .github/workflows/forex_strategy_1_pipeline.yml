@@ -1,28 +1,19 @@
-# .github/workflows/forex_strategy_pipeline.yml
-name: Forex Strategy 1 Pipeline
-
+name: forex strategy 1 pipeline
 on:
   push:
-    branches: [ main, master ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
-    inputs:
-      strategy_id:
-        description: 'Strategy 1'
-        required: true
-        default: 'strat1'
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.strategy_id }}
-  cancel-in-progress: false
 
 jobs:
-  forex_analysis:
-    runs-on: window-latest
+  run_analysis:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      actions: write
+      checks: write
+      pull-requests: write
 
     steps:
     - uses: actions/checkout@v3
@@ -30,7 +21,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'
+        python-version: '3.11'
         cache: 'pip'
 
     - name: Install dependencies
@@ -38,25 +29,48 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Cache forex data
-      uses: actions/cache@v3
-      with:
-        path: forex_data
-        key: ${{ runner.os }}-forex-data-${{ hashFiles('forex_data/**') }}
-        restore-keys: |
-          ${{ runner.os }}-forex-data-
-
-    - name: Run workflow orchestrator
+    - name: Run labels generation
       run: |
-        python workflow_orchestrator.py
-      env:
-        STRATEGY_ID: ${{ inputs.strategy_id }}
+        python scripts\\01_labels_strat1.py
 
-    - name: Upload artifacts
+    - name: Train all models
+      run: |
+        python scripts\\02_allmodels_strat1.py
+
+    - name: Select best models
+      run: |
+        python scripts\\03_bestmodels_strat1.py
+
+    - name: Run predictions
+      run: |
+        python scripts\\04_predictions_strat1.py
+
+    - name: Run metrics
+      run: |
+        python scripts\\05_metrics_strat1.py
+
+    - name: Check for output changes
+      id: output_files
+      run: |
+        if git diff --quiet output\\; then
+          echo "changed=false" >> $GITHUB_ENV
+        else
+          echo "changed=true" >> $GITHUB_ENV
+        fi
+
+    - name: Commit and push output files
+      if: success() && env.changed == 'true'
+      run: |
+        git config --global user.name "github action"
+        git config --global user.email "kalulu404@gmail.com"
+        git add output\\*
+        git commit -m "add analysis results [skip ci]"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload output as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: forex-analysis-results-${{ inputs.strategy_id }}
-        path: |
-          output/
-          logs/
-        retention-days: 7
+        name: forex-analysis-output
+        path: output\\
