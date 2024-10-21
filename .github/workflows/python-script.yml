@@ -1,4 +1,4 @@
-name: Create labels
+name: Create Trading Labels
 
 on:
   push:
@@ -6,14 +6,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  process_data:
+  create_labels:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
         cache: 'pip'
@@ -28,12 +28,18 @@ jobs:
         mkdir -p output/labels_strat1
       shell: bash
     
-    - name: Run data processing
+    - name: Generate trading labels
       run: python scripts/labels_strat1.py
     
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+    - name: Upload labels
+      uses: actions/upload-artifact@v4
       with:
-        name: processed-data
+        name: trading-labels
         path: output/labels_strat1/
         retention-days: 7
+    
+    - name: List generated files
+      run: |
+        echo "Generated files in output/labels_strat1:"
+        ls output/labels_strat1
+      shell: bash

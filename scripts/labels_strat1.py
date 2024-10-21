@@ -196,10 +196,23 @@ def save_results(currency: str, features: pd.DataFrame, target: pd.Series,
                 close: pd.Series, times: pd.DataFrame):
     logger.info(f"Saving results for {currency}")
     
-    features.to_csv(OUTPUT_DIR / f"{currency}_features.csv")
-    target.to_csv(OUTPUT_DIR / f"{currency}_target.csv")
-    close.to_csv(OUTPUT_DIR / f"{currency}_close.csv")
-    times.to_csv(OUTPUT_DIR / f"{currency}_times.csv")
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    
+    features_path = OUTPUT_DIR / f"{currency}_features.csv"
+    target_path = OUTPUT_DIR / f"{currency}_target.csv"
+    close_path = OUTPUT_DIR / f"{currency}_close.csv"
+    times_path = OUTPUT_DIR / f"{currency}_times.csv"
+    
+    features.to_csv(features_path, index=True)
+    target.to_csv(target_path, index=True)
+    close.to_csv(close_path, index=True)
+    times.to_csv(times_path, index=True)
+    
+    logger.info(f"Saved files for {currency}:")
+    logger.info(f"- Features: {features_path}")
+    logger.info(f"- Target: {target_path}")
+    logger.info(f"- Close: {close_path}")
+    logger.info(f"- Times: {times_path}")
 
 def load_price_data() -> pd.DataFrame:
     files = list(DATA_DIR.glob('*.csv'))
@@ -218,7 +231,7 @@ def load_price_data() -> pd.DataFrame:
     return prices.resample('1h').last().ffill()
 
 def main():
-    logger.info("Starting data processing pipeline")
+    logger.info("Starting to create labels for strategy 1")
     try:
         prices_hourly = load_price_data()
         for currency in prices_hourly.columns:
