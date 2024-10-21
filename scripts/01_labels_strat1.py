@@ -95,7 +95,7 @@ def calculate_technical_features(close: pd.Series) -> pd.DataFrame:
     features = pd.DataFrame(index=close.index)
     features['frac_diff_log'] = fracdiff_log_price(close)
     features['volat'] = get_volat_w_log_returns(close, span=10)
-    features['proc'] = close.pct_change(24) * 100
+    features['proc'] = close.pct_change(24, fill_method=None) * 100
 
     weights = np.arange(1, 25)
     features['wpc'] = close.rolling(24).apply(lambda x: np.dot(x, weights) / weights.sum(), raw=True)
@@ -138,7 +138,7 @@ def process_currency(prices_hourly: pd.DataFrame, currency: str):
     scaled_features = pd.DataFrame(scaler.fit_transform(features), index=features.index, columns=features.columns)
     final_features = select_features(scaled_features)
 
-    target = np.sign(close.pct_change().shift(-1)).fillna(0)
+    target = np.sign(close.pct_change(fill_method=None).shift(-1)).fillna(0)
     times = exit_time(close, 24).to_frame(name='end_time')
     times['start_time'] = times.index
 

@@ -7,7 +7,7 @@ import seaborn as sns
 import os
 import pickle
 from loguru import logger
-from config import PREDICTIONS_OUTPUT_DIR, METRICS_OUTPUT_DIR, LOGS_DIR
+from config import PREDICTIONS_OUTPUT_DIR, METRICS_OUTPUT_DIR, LOGS_DIR, S_PARTITIONS
 
 sns.set_style('dark')
 
@@ -56,15 +56,15 @@ def calc_deflated_sharpe(results_test_set):
     logger.info(f"Calculated DSR: {dsr} for model: {highest_sharpe_model} with Sharpe: {highest_sharpe}")
     return dsr
 
-def calc_pbo(model_data, S):
+def calc_pbo(model_data, S_PARTITIONS):
     M = pd.DataFrame({model: data['daily_pnl'] for model, data in model_data.items()})
-    submatrices = [M.iloc[i::S, :] for i in range(S)]
-    combinations_size = S // 2
-    combinations_indices = list(itt.combinations(range(S), combinations_size))
+    submatrices = [M.iloc[i::S_PARTITIONS, :] for i in range(S_PARTITIONS)]
+    combinations_size = S_PARTITIONS // 2
+    combinations_indices = list(itt.combinations(range(S_PARTITIONS), combinations_size))
     logits = []
     for comb in combinations_indices:
         J_train = pd.concat([submatrices[i] for i in comb], axis=0)
-        J_test = pd.concat([submatrices[i] for i in range(S) if i not in comb], axis=0)
+        J_test = pd.concat([submatrices[i] for i in range(S_PARTITIONS) if i not in comb], axis=0)
         Rc_IS = J_train.mean()
         Rc_OOS = J_test.mean()
         n_star = Rc_IS.idxmax()
@@ -84,13 +84,14 @@ def dict_to_df(results_dict, metric_name):
             df_list.append({'currency': currency, 'cv method': method, 'value': value, 'metric': metric_name})
     return pd.DataFrame(df_list)
 
-def plot_metric(df, metric_name):
+def plot_metric(df, metric_name, output_path):
     plt.figure(figsize=(8, 4))
     sns.boxplot(x='cv method', y='value', data=df, palette='rocket', hue='cv method', width=0.2)
     plt.title(f"\n{metric_name}")
     plt.ylabel(metric_name)
     plt.xlabel('')
-    plt.tight_layout()
+    plt.savefig(output_path, format='png') 
+    plt.close() 
 
 def main():
     try:
@@ -114,11 +115,11 @@ def main():
         logger.info("DSR results saved successfully.")
 
         pbo_results = {}
-        S = 10  # Define S based on your requirements
+
         for currency, cv_methods in predictions_results.items():
             pbo_results[currency] = {}
             for cv_method, model_data in cv_methods.items():
-                pbo_value = calc_pbo(model_data, S)
+                pbo_value = calc_pbo(model_data, S_PARTITIONS)
                 pbo_results[currency][cv_method] = pbo_value
 
         pbo_output_path = os.path.join(METRICS_OUTPUT_DIR, 'pbo_results.pkl')
@@ -133,8 +134,9 @@ def main():
 
         metrics_to_plot = [(dsr_df, 'DSR'), (pbo_df, 'PBO')]
         for df, metric in metrics_to_plot:
-            plot_metric(df, metric)
-            logger.info(f"Plotted metric: {metric}")
+            plot_output_path = os.path.join(METRICS_OUTPUT_DIR, f'{metric.lower()}_boxplot.png')
+            plot_metric(df, metric, plot_output_path)
+            logger.info(f"Plotted and saved metric: {metric} at {plot_output_path}")
 
     except Exception as e:
         logger.error(f"Processing failed: {e}")

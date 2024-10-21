@@ -380,7 +380,7 @@ def load_models() -> dict:
 
 def main():
     try:
-        initialize_h2o()
+        initialise_h2o()
         currency_data = load_currency_data()
         loaded_models = load_models()
         
@@ -438,9 +438,6 @@ def main():
     except Exception as e:
         logger.error(f"Processing failed: {e}")
         raise
-    finally:
-        h2o.cluster().shutdown()
-        logger.info("H2O cluster shut down")
 
 if __name__ == "__main__":
     main()

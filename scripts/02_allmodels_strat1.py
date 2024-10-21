@@ -29,7 +29,7 @@ def initialise_h2o():
         h2o.no_progress()
         logger.info("H2O instance started successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize H2O: {e}")
+        logger.error(f"Failed to initialise H2O: {e}")
         raise
 
 def load_currency_data(input_dir: Path) -> dict:
@@ -115,16 +115,13 @@ def train_and_save_models(currency_data: dict, output_dir: Path):
 
 def main():
     try:
-        initialize_h2o()
+        initialise_h2o()
         currency_data = load_currency_data(LABELS_OUTPUT_DIR)
         train_and_save_models(currency_data, ALL_MODELS_OUTPUT_DIR)
         logger.info("Model training and saving completed successfully")
     except Exception as e:
         logger.error(f"Processing failed: {e}")
         raise
-    finally:
-        h2o.cluster().shutdown()
-        logger.info("H2O cluster shut down")
 
 if __name__ == "__main__":
     main()
