@@ -111,7 +111,7 @@ def train_and_save_models(currency_data: dict, output_dir: Path):
 def main():
     try:
         initialise_h2o()
-        currency_data = load_currency_data(LABELS_OUTPUT_DIR)
+        currency_data = load_currency_data()
         train_and_save_models(currency_data, ALL_MODELS_OUTPUT_DIR)
         logger.info("Model training and saving completed successfully")
     except Exception as e:
