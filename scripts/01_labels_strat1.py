@@ -139,6 +139,8 @@ def process_currency(prices_hourly: pd.DataFrame, currency: str):
     final_features = select_features(scaled_features)
 
     target = np.sign(close.pct_change(fill_method=None).shift(-1)).fillna(0)
+    target.name = "target"  
+    
     times = exit_time(close, 24).to_frame(name='end_time')
     times['start_time'] = times.index
 
