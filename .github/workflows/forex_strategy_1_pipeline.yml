@@ -30,8 +30,11 @@ jobs:
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
+      - name: List scripts directory
+        run: dir ${{ github.workspace }}/scripts
+
       - name: Run labels generation
-        run: python scripts/01_labels_strat1.py
+        run: python ${{ github.workspace }}/scripts/01_labels_strat1.py
         shell: pwsh
 
       - name: Upload labels as artifact
