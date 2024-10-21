@@ -16,39 +16,72 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11' 
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
+        shell: pwsh
+
   generate_labels:
     runs-on: windows-latest
     needs: prepare
     steps:
-      - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-      - name: List scripts directory
-        run: dir ${{ github.workspace }}/scripts
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Run labels generation
-        run: python ${{ github.workspace }}/scripts/01_labels_strat1.py
+        run: python scripts/01_labels_strat1.py
         shell: pwsh
 
       - name: Upload labels as artifact
         uses: actions/upload-artifact@v3
         with:
           name: labels-output
-          path: output/
+          path: output/labels_strat1/
 
   train_models:
     runs-on: windows-latest
     needs: generate_labels
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download labels artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: labels-output
+          path: output/labels_strat1/
+
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Train all models
         run: python scripts/02_allmodels_strat1.py
@@ -58,14 +91,33 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: models-output
-          path: output/
+          path: output/all_models_strat1_h2o/
 
   select_best_models:
     runs-on: windows-latest
     needs: train_models
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download models artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: models-output
+          path: output/all_models_strat1_h2o/
+
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Select best models
         run: python scripts/03_bestmodels_strat1.py
@@ -75,14 +127,33 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: best-models-output
-          path: output/
+          path: output/best_models_strat1_h2o/
 
   run_predictions:
     runs-on: windows-latest
     needs: select_best_models
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download best models artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: best-models-output
+          path: output/best_models_strat1_h2o/
+
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Run predictions
         run: python scripts/04_predictions_strat1.py
@@ -92,14 +163,33 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: predictions-output
-          path: output/
+          path: output/predictions_strat1_h2o/
 
   run_metrics:
     runs-on: windows-latest
     needs: run_predictions
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download predictions artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: predictions-output
+          path: output/predictions_strat1_h2o/
+
       - name: Set PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+        run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Run metrics
         run: python scripts/05_metrics_strat1.py
@@ -109,4 +199,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: metrics-output
-          path: output/
+          path: output/metrics_strat1_h2o/
