@@ -356,8 +356,6 @@ def load_currency_data() -> dict:
             
             currency_data[currency] = {
                 'train': train,
-                'features': features,
-                'target': target,
                 'close': close,
                 'times': times
             }

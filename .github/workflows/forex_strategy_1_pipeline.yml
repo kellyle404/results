@@ -31,7 +31,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/
+          git add output\
           git commit -m "Add output files from prepare step" || echo "No changes to commit"
           git push
         env:
@@ -58,14 +58,14 @@ jobs:
         shell: pwsh
 
       - name: Run labels generation
-        run: python scripts/01_labels_strat1.py
+        run: python scripts\01_labels_strat1.py
         shell: pwsh
 
       - name: Commit generated labels
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/labels_strat1/
+          git add output\labels_strat1\
           git commit -m "Add generated labels" || echo "No changes to commit"
           git push
         env:
@@ -92,14 +92,14 @@ jobs:
         shell: pwsh
 
       - name: Train all models
-        run: python scripts/02_allmodels_strat1.py
+        run: python scripts\02_allmodels_strat1.py
         shell: pwsh
 
       - name: Commit trained models
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/all_models_strat1_h2o/
+          git add output\all_models_strat1_h2o\
           git commit -m "Add trained models" || echo "No changes to commit"
           git push
         env:
@@ -126,14 +126,14 @@ jobs:
         shell: pwsh
 
       - name: Select best models
-        run: python scripts/03_bestmodels_strat1.py
+        run: python scripts\03_bestmodels_strat1.py
         shell: pwsh
 
       - name: Commit best models
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/best_models_strat1_h2o/
+          git add output\best_models_strat1_h2o\
           git commit -m "Add best models" || echo "No changes to commit"
           git push
         env:
@@ -160,14 +160,14 @@ jobs:
         shell: pwsh
 
       - name: Run predictions
-        run: python scripts/04_predictions_strat1.py
+        run: python scripts\04_predictions_strat1.py
         shell: pwsh
 
       - name: Commit predictions
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/predictions_strat1_h2o/
+          git add output\predictions_strat1_h2o\
           git commit -m "Add predictions" || echo "No changes to commit"
           git push
         env:
@@ -194,14 +194,14 @@ jobs:
         shell: pwsh
 
       - name: Run metrics
-        run: python scripts/05_metrics_strat1.py
+        run: python scripts\05_metrics_strat1.py
         shell: pwsh
 
       - name: Commit metrics
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output/metrics_strat1_h2o/
+          git add output\metrics_strat1_h2o\
           git commit -m "Add metrics" || echo "No changes to commit"
           git push
         env:

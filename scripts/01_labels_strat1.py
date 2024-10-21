@@ -148,7 +148,6 @@ def process_currency(prices_hourly: pd.DataFrame, currency: str):
     save_results(currency, final_features.loc[index], target.loc[index], close.loc[index], times.loc[index])
 
 def save_results(currency: str, features: pd.DataFrame, target: pd.Series, close: pd.Series, times: pd.DataFrame):
-    """Save processed data to the labels output directory"""
     try:
         features.to_csv(LABELS_OUTPUT_DIR / f"{currency}_features.csv")
         target.to_csv(LABELS_OUTPUT_DIR / f"{currency}_target.csv")
@@ -160,7 +159,6 @@ def save_results(currency: str, features: pd.DataFrame, target: pd.Series, close
         raise
 
 def load_price_data() -> pd.DataFrame:
-    """Load and preprocess price data from the data directory"""
     try:
         files = list(DATA_DIR.glob('*.csv'))
         if not files:

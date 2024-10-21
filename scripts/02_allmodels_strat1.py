@@ -32,48 +32,43 @@ def initialise_h2o():
         logger.error(f"Failed to initialise H2O: {e}")
         raise
 
-def load_currency_data(input_dir: Path) -> dict:
-    logger.info(f"Loading currency data from: {input_dir}")
-    feature_files = list(input_dir.glob("*_features.csv"))
+def load_currency_data() -> dict:
+    logger.info(f"Loading currency data from: {LABELS_OUTPUT_DIR}")
+    all_currency_files = list(LABELS_OUTPUT_DIR.glob("*_features.csv"))
     
-    if not feature_files:
-        logger.error(f"No feature files found in {input_dir}")
-        raise FileNotFoundError(f"No feature files found in {input_dir}")
+    if not all_currency_files:
+        logger.error(f"No files found in {LABELS_OUTPUT_DIR}")
+        raise FileNotFoundError(f"No files found in {LABELS_OUTPUT_DIR}")
 
     currency_data = {}
-
-    for file in feature_files:
+    for file in all_currency_files:
         currency = file.stem.split('_')[0]
         logger.info(f"Processing data for currency: {currency}")
-
-        target_file = input_dir / f"{currency}_target.csv"
-        if not target_file.exists():
-            logger.error(f"Target file missing for {currency}")
-            continue
-
+        
         try:
-            features = pd.read_csv(file, index_col=0)
-            target = pd.read_csv(target_file, index_col=0)
+            features = pd.read_csv(LABELS_OUTPUT_DIR / f"{currency}_features.csv", index_col=0)
+            target = pd.read_csv(LABELS_OUTPUT_DIR / f"{currency}_target.csv", index_col=0)
+            close = pd.read_csv(LABELS_OUTPUT_DIR / f"{currency}_close.csv", index_col=0)
+
+            for df in [features, times, close, target]:
+                df.index = pd.to_datetime(df.index)
 
             features_train, features_test, target_train, target_test = train_test_split(
                 features, target, train_size=0.7, shuffle=False
             )
-
             train = pd.concat([features_train, target_train], axis=1)
-
+            
             currency_data[currency] = {
                 'train': train,
-                'features': features,
-                'target': target,
             }
             logger.info(f"Successfully loaded data for {currency}")
         except Exception as e:
             logger.error(f"Failed to load data for {currency}: {e}")
+            continue
 
     return currency_data
 
 def train_and_save_models(currency_data: dict, output_dir: Path):
-    """Train H2O models and save them to output directory"""
     total_currencies = len(currency_data)
 
     for count, (currency, data) in enumerate(currency_data.items(), start=1):
