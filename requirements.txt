@@ -7,3 +7,4 @@ ta
 statsmodels
 scikit-learn
 loguru
+h2o

@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from statsmodels.tsa.stattools import adfuller
 
 ROOT_DIR = Path(__file__).parent.parent
-DATA_DIR = ROOT_DIR / 'forex_test_data'
+DATA_DIR = ROOT_DIR / 'forex_data'
 OUTPUT_DIR = ROOT_DIR / 'output' / 'labels_strat1'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
