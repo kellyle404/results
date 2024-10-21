@@ -14,7 +14,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -27,6 +27,16 @@ jobs:
         run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
         shell: pwsh
 
+      - name: Commit prepared artifacts
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/
+          git commit -m "Add output files from prepare step" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   generate_labels:
     runs-on: windows-latest
     needs: prepare
@@ -34,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -51,11 +61,15 @@ jobs:
         run: python scripts/01_labels_strat1.py
         shell: pwsh
 
-      - name: Upload labels as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: labels-output
-          path: output/labels_strat1/
+      - name: Commit generated labels
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/labels_strat1/
+          git commit -m "Add generated labels" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   train_models:
     runs-on: windows-latest
@@ -64,7 +78,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -72,12 +86,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Download labels artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: labels-output
-          path: output/labels_strat1/
 
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
@@ -87,11 +95,15 @@ jobs:
         run: python scripts/02_allmodels_strat1.py
         shell: pwsh
 
-      - name: Upload models as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: models-output
-          path: output/all_models_strat1_h2o/
+      - name: Commit trained models
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/all_models_strat1_h2o/
+          git commit -m "Add trained models" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   select_best_models:
     runs-on: windows-latest
@@ -100,7 +112,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -108,12 +120,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Download models artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: models-output
-          path: output/all_models_strat1_h2o/
 
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
@@ -123,11 +129,15 @@ jobs:
         run: python scripts/03_bestmodels_strat1.py
         shell: pwsh
 
-      - name: Upload best models as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: best-models-output
-          path: output/best_models_strat1_h2o/
+      - name: Commit best models
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/best_models_strat1_h2o/
+          git commit -m "Add best models" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   run_predictions:
     runs-on: windows-latest
@@ -136,7 +146,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -144,12 +154,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Download best models artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: best-models-output
-          path: output/best_models_strat1_h2o/
 
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
@@ -159,11 +163,15 @@ jobs:
         run: python scripts/04_predictions_strat1.py
         shell: pwsh
 
-      - name: Upload predictions as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: predictions-output
-          path: output/predictions_strat1_h2o/
+      - name: Commit predictions
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/predictions_strat1_h2o/
+          git commit -m "Add predictions" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   run_metrics:
     runs-on: windows-latest
@@ -172,7 +180,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -180,12 +188,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Download predictions artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: predictions-output
-          path: output/predictions_strat1_h2o/
 
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
@@ -195,8 +197,12 @@ jobs:
         run: python scripts/05_metrics_strat1.py
         shell: pwsh
 
-      - name: Upload metrics as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: metrics-output
-          path: output/metrics_strat1_h2o/
+      - name: Commit metrics
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/metrics_strat1_h2o/
+          git commit -m "Add metrics" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
