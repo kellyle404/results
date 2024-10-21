@@ -1,4 +1,5 @@
 name: forex strategy 1 pipeline
+
 on:
   push:
     branches: [main, master]
@@ -26,49 +27,55 @@ jobs:
 
     - name: Install dependencies
       run: |
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Set PYTHONPATH
+    - name: Set up Python path
       run: |
-        set PYTHONPATH=%CD%
+        echo "${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "PYTHONPATH=${{ github.workspace }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Run labels generation
       run: |
-        python scripts\\01_labels_strat1.py
+        python -c "import sys; print(sys.path)"
+        python scripts/01_labels_strat1.py
+      shell: pwsh
 
     - name: Train all models
-      run: |
-        python scripts\\02_allmodels_strat1.py
+      if: success()
+      run: python scripts/02_allmodels_strat1.py
+      shell: pwsh
 
     - name: Select best models
-      run: |
-        python scripts\\03_bestmodels_strat1.py
+      if: success()
+      run: python scripts/03_bestmodels_strat1.py
+      shell: pwsh
 
     - name: Run predictions
-      run: |
-        python scripts\\04_predictions_strat1.py
+      if: success()
+      run: python scripts/04_predictions_strat1.py
+      shell: pwsh
 
     - name: Run metrics
-      run: |
-        python scripts\\05_metrics_strat1.py
+      if: success()
+      run: python scripts/05_metrics_strat1.py
+      shell: pwsh
 
     - name: Check for output changes
-      id: output_files
+      id: check_changes
       run: |
-        if git diff --quiet output\\; then
-          echo "changed=false" >> $GITHUB_ENV
-        else
-          echo "changed=true" >> $GITHUB_ENV
-        fi
+        git diff --quiet output/ || echo "changed=true" >> $env:GITHUB_ENV
+      shell: pwsh
 
     - name: Commit and push output files
-      if: success() && env.changed == 'true'
+      if: env.changed == 'true'
       run: |
-        git config --global user.name "github action"
-        git config --global user.email "kalulu404@gmail.com"
-        git add output\\*
-        git commit -m "add analysis results [skip ci]"
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add output/*
+        git commit -m "Update analysis results [skip ci]"
         git push
+      shell: pwsh
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -76,4 +83,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: forex-analysis-output
-        path: output\\
+        path: output/
