@@ -1,0 +1,23 @@
+2024-10-21 00:46:42.161 | INFO     | __main__:main:234 - Starting to create labels for strategy 1
+2024-10-21 00:46:44.959 | INFO     | __main__:process_currency:161 - Processing currency: AUDJPY
+2024-10-21 00:46:52.056 | INFO     | __main__:save_results:197 - Saving results for AUDJPY
+2024-10-21 00:46:54.589 | INFO     | __main__:save_results:211 - Saved files for AUDJPY:
+2024-10-21 00:46:54.589 | INFO     | __main__:save_results:212 - - Features: D:\a\results\results\output\labels_strat1\AUDJPY_features.csv
+2024-10-21 00:46:54.589 | INFO     | __main__:save_results:213 - - Target: D:\a\results\results\output\labels_strat1\AUDJPY_target.csv
+2024-10-21 00:46:54.589 | INFO     | __main__:save_results:214 - - Close: D:\a\results\results\output\labels_strat1\AUDJPY_close.csv
+2024-10-21 00:46:54.589 | INFO     | __main__:save_results:215 - - Times: D:\a\results\results\output\labels_strat1\AUDJPY_times.csv
+2024-10-21 00:46:54.589 | INFO     | __main__:process_currency:161 - Processing currency: EURJPY
+2024-10-21 00:47:02.279 | INFO     | __main__:save_results:197 - Saving results for EURJPY
+2024-10-21 00:47:04.687 | INFO     | __main__:save_results:211 - Saved files for EURJPY:
+2024-10-21 00:47:04.687 | INFO     | __main__:save_results:212 - - Features: D:\a\results\results\output\labels_strat1\EURJPY_features.csv
+2024-10-21 00:47:04.687 | INFO     | __main__:save_results:213 - - Target: D:\a\results\results\output\labels_strat1\EURJPY_target.csv
+2024-10-21 00:47:04.687 | INFO     | __main__:save_results:214 - - Close: D:\a\results\results\output\labels_strat1\EURJPY_close.csv
+2024-10-21 00:47:04.687 | INFO     | __main__:save_results:215 - - Times: D:\a\results\results\output\labels_strat1\EURJPY_times.csv
+2024-10-21 00:47:04.687 | INFO     | __main__:process_currency:161 - Processing currency: USDJPY
+2024-10-21 00:47:12.833 | INFO     | __main__:save_results:197 - Saving results for USDJPY
+2024-10-21 00:47:15.238 | INFO     | __main__:save_results:211 - Saved files for USDJPY:
+2024-10-21 00:47:15.238 | INFO     | __main__:save_results:212 - - Features: D:\a\results\results\output\labels_strat1\USDJPY_features.csv
+2024-10-21 00:47:15.238 | INFO     | __main__:save_results:213 - - Target: D:\a\results\results\output\labels_strat1\USDJPY_target.csv
+2024-10-21 00:47:15.238 | INFO     | __main__:save_results:214 - - Close: D:\a\results\results\output\labels_strat1\USDJPY_close.csv
+2024-10-21 00:47:15.238 | INFO     | __main__:save_results:215 - - Times: D:\a\results\results\output\labels_strat1\USDJPY_times.csv
+2024-10-21 00:47:15.238 | INFO     | __main__:main:239 - Processing completed successfully
