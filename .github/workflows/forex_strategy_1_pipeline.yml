@@ -10,35 +10,23 @@ on:
 jobs:
   prepare:
     runs-on: windows-latest
-    outputs:
-      cache_key: ${{ steps.cache_key.outputs.key }}
     steps:
       - uses: actions/checkout@v4
 
-      - id: cache_key
-        run: echo "key=${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Set up Python and install dependencies
+      - name: Set up Python
         uses: actions/setup-python@v4
-
-      - name: Upload cache key as artifact
-        uses: actions/upload-artifact@v3
         with:
-          name: cache-key
-          path: $GITHUB_OUTPUT
+          python-version: '3.11' 
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
   generate_labels:
     runs-on: windows-latest
     needs: prepare
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download cache key artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: cache-key
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
@@ -56,13 +44,6 @@ jobs:
     runs-on: windows-latest
     needs: generate_labels
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download labels artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: labels-output
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
@@ -80,13 +61,6 @@ jobs:
     runs-on: windows-latest
     needs: train_models
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download models artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: models-output
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
@@ -104,13 +78,6 @@ jobs:
     runs-on: windows-latest
     needs: select_best_models
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download best models artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: best-models-output
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
@@ -123,18 +90,11 @@ jobs:
         with:
           name: predictions-output
           path: output/
-          
+
   run_metrics:
     runs-on: windows-latest
     needs: run_predictions
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Download predictions artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: predictions-output
-
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
