@@ -1,3 +1,10 @@
+name: Create Trading Labels
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
 jobs:
   create_labels:
     runs-on: windows-latest
@@ -18,7 +25,7 @@ jobs:
     
     - name: Prepare directories
       run: |
-        mkdir output\labels_strat1  
+        mkdir output\labels_strat1
     
     - name: Generate trading labels
       run: python scripts/labels_strat1.py
@@ -34,3 +41,4 @@ jobs:
       run: |
         echo "Generated files in output/labels_strat1:"
         ls output/labels_strat1
+      shell: bash
