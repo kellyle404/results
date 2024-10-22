@@ -15,9 +15,8 @@ LOGS_DIR = config.LOGS_DIR
 LABELS_OUTPUT_DIR = config.LABELS_OUTPUT_DIR
 
 logger.add(
-    os.path.join(LOGS_DIR, "01_labels_strat1.log"),  
+    f"{LOGS_DIR}/01_labels_strat1.log",  
     level="INFO",
-    rotation="1 MB",
     backtrace=True,
     diagnose=True
 )
