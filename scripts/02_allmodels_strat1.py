@@ -50,7 +50,7 @@ def load_currency_data() -> dict:
             target = pd.read_csv(LABELS_OUTPUT_DIR / f"{currency}_target.csv", index_col=0)
             close = pd.read_csv(LABELS_OUTPUT_DIR / f"{currency}_close.csv", index_col=0)
 
-            for df in [features, times, close, target]:
+            for df in [features, close, target]:
                 df.index = pd.to_datetime(df.index)
 
             features_train, features_test, target_train, target_test = train_test_split(
