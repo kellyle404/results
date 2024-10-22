@@ -1,4 +1,6 @@
 import glob
+import os
+
 import numpy as np
 import pandas as pd
 import scipy.stats as ss
@@ -7,7 +9,9 @@ from loguru import logger
 from sklearn.metrics import mutual_info_score
 from sklearn.preprocessing import StandardScaler
 from statsmodels.tsa.stattools import adfuller
-import config  
+
+import config
+
 
 DATA_DIR = config.DATA_DIR
 LOGS_DIR = config.LOGS_DIR
