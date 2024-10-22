@@ -12,6 +12,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,20 +25,34 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Debug directory contents
+        run: |
+          echo "Current directory structure:"
+          dir /s
+        shell: cmd
+
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$env:GITHUB_WORKSPACE" >> $env:GITHUB_ENV
         shell: pwsh
 
       - name: Run labels generation
-        run: python scripts\01_labels_strat1.py
+        run: python scripts/01_labels_strat1.py
         shell: pwsh
 
+      - name: Upload labels artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: labels-output
+          path: output/labels_strat1/
+          retention-days: 100
+
       - name: Commit generated labels
+        if: github.event_name != 'pull_request'
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add output\labels_strat1\
-          git commit -m "Add generated labels" || echo "No changes to commit"
+          git add "output/labels_strat1/*"
+          git commit -m "Add generated labels [skip ci]" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
