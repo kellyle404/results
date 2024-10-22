@@ -10,7 +10,6 @@ from statsmodels.tsa.stattools import adfuller
 import config  
 
 DATA_DIR = config.DATA_DIR
-OUTPUT_DIR = config.OUTPUT_DIR
 LOGS_DIR = config.LOGS_DIR
 LABELS_OUTPUT_DIR = config.LABELS_OUTPUT_DIR
 
@@ -155,30 +154,29 @@ def save_results(currency: str, features: pd.DataFrame, target: pd.Series, close
         logger.error(f"Error saving results for {currency}: {str(e)}")
         raise
 
+
 def load_price_data() -> pd.DataFrame:
     try:
-        files = list(DATA_DIR.glob('*.csv'))
+        files = glob.glob(os.path.join(DATA_DIR, '*.csv'))
         if not files:
             logger.error(f"No CSV files found in {DATA_DIR}")
             raise FileNotFoundError(f"No CSV files found in {DATA_DIR}")
-
         logger.info(f"Found {len(files)} CSV files in {DATA_DIR}")
-        
         dfs = []
         for f in files:
             try:
                 df = pd.read_csv(f)
                 df.set_index('Date', inplace=True)
                 dfs.append(df)
-                logger.debug(f"Successfully loaded {f.name}")
+                logger.debug(f"Successfully loaded {os.path.basename(f)}")
             except Exception as e:
-                logger.error(f"Error loading {f.name}: {str(e)}")
+                logger.error(f"Error loading {os.path.basename(f)}: {str(e)}")
                 continue
 
         prices = pd.concat(dfs, axis=1)
         prices.index = pd.to_datetime(prices.index)
         return prices.resample('1h').ffill()
-    
+
     except Exception as e:
         logger.error(f"Error in load_price_data: {str(e)}")
         raise
