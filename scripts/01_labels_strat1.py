@@ -3,26 +3,24 @@ import numpy as np
 import pandas as pd
 import scipy.stats as ss
 import ta
-from pathlib import Path
 from loguru import logger
 from sklearn.metrics import mutual_info_score
 from sklearn.preprocessing import StandardScaler
 from statsmodels.tsa.stattools import adfuller
-import config
-from config import (
-    DATA_DIR,
-    LABELS_OUTPUT_DIR,
-    LOGS_DIR
-)
+import config  
+
+DATA_DIR = config.DATA_DIR
+OUTPUT_DIR = config.OUTPUT_DIR
+LOGS_DIR = config.LOGS_DIR
+LABELS_OUTPUT_DIR = config.LABELS_OUTPUT_DIR
 
 logger.add(
-    LOGS_DIR / "01_labels_strat1.log",  
+    os.path.join(LOGS_DIR, "01_labels_strat1.log"),  
     level="INFO",
     rotation="1 MB",
     backtrace=True,
     diagnose=True
 )
-
 
 def calculate_weights_ffd(degree: float, threshold: float) -> np.ndarray:
     weights = [1.]
